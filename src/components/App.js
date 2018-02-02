@@ -53,9 +53,9 @@ class App extends Component {
 
   addAddress(e) {
     e.preventDefault();
-    console.log("We adding one!")
     if (!this.state.storedAddresses.includes(this.state.addressText)) {
-      this.state.storedAddresses.push(this.state.addressText)
+      this.state.storedAddresses.push(this.state.addressText);
+      this.forceUpdate();
     }
     const message = JSON.stringify({"op":"addr_sub", "addr": this.state.addressText})
     this.socket.send(message);
@@ -69,6 +69,17 @@ class App extends Component {
     return (
       <div>
         <AddressInput address={this.state.addressText} addAddress={this.addAddress} updateText={this.updateText}/>
+        {this.state.storedAddresses.length &&
+          <p>Currently Tracking:</p>
+        }
+
+        <div className="row">
+          {this.state.storedAddresses.map(address => {
+            return (
+              <p key={address}>{address}</p>
+            )
+          })}
+        </div>
         <TransactionList transactions={this.state.transactions}/>
       </div>
     );
