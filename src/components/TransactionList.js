@@ -1,21 +1,20 @@
-import React, { Component } from 'react';
+import React from 'react';
 import '../styles/App.css';
 
-class TransactionCard extends Component {
-
-  render() {
-    return (
-      <div className="card horizontal col s12 m6 l3">
-        <div className="card-stacked">
-          <div className="card-content">
-            <p>Payment from 1C9U4ivTJm3EDGYhtQTRDHcAf6HLQ4hwLJ</p>
-            <p>Time: 11:10am</p>
-            <p>Value: .00002341 | USD: $5.75</p>
+export default ({ transactions }) => (
+  <div className="row">
+    {transactions.map(transaction => {
+      return (
+        <div key={transaction.id} className="card horizontal col s12 m6 l3">
+          <div className="card-stacked">
+            <div className="card-content">
+              <p>Payment sent to {transaction.address}</p>
+              <p>Time Sent: {transaction.time}</p>
+              <p>BTC: {transaction.satoshiValue} | USD: ${transaction.usdValue}</p>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
-}
-
-export default TransactionCard;
+      );
+    })}
+  </div>
+);

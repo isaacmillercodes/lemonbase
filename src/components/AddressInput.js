@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/App.css';
 
-export default ({ address, addAddress }) => (
+export default ({ address, addAddress, updateText }) => (
   <div className="row">
     <div className="col s12 offset-m3 m6">
       <div className="card blue-grey darken-1">
@@ -11,8 +11,11 @@ export default ({ address, addAddress }) => (
         </div>
         <div className="card-action">
           <form onSubmit={addAddress}>
-            <input placeholder="Enter a Bitcoin address" id="address" type="text" value={address} minLength="26" maxLength="35" />
-            <button type="submit">Submit</button>
+            <div className="input-field">
+              <input id="address" type="text" value={address} minLength="26" maxLength="35" className="validate" onChange={updateText}/>
+              <label htmlFor="address">Bitcoin Address</label>
+            </div>
+            <button type="button">Submit</button>
           </form>
         </div>
       </div>
