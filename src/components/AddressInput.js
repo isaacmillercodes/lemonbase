@@ -15,7 +15,7 @@ export default ({ address, addAddress, updateText }) => (
               <input id="address" type="text" value={address} minLength="26" maxLength="35" className="validate" onChange={updateText}/>
               <label htmlFor="address">Bitcoin Address</label>
             </div>
-            <button type="button">Submit</button>
+            <button type="submit">Submit</button>
           </form>
         </div>
       </div>

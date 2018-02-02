@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import '../styles/App.css';
-// import socket from '../socket';
 import AddressInput from './AddressInput';
 import TransactionList from './TransactionList';
 
@@ -9,32 +8,17 @@ class App extends Component {
     super(props);
     this.state = {
       addressText: '',
+      storedAddresses: [],
       transactions: []
     }
     this.addAddress = this.addAddress.bind(this);
     this.updateText = this.updateText.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
-    console.log("current props: ", this.props);
-    console.log("next props: ", nextProps);
-  }
-
-  addAddress(e) {
-    e.preventDefault();
-
-    const address = this.state.addressText;
-    const transactions = this.state.transactions;
-
-    const socket = new WebSocket('wss://ws.blockchain.info/inv');
-
-  	socket.onopen = function() {
-  		const message = JSON.stringify({"op":"addr_sub", "addr": address})
-  		socket.send(message);
-  	};
-
-  	socket.onmessage = function(onmsg) {
-
+  componentDidMount() {
+    const component = this;
+    component.socket = new WebSocket('wss://ws.blockchain.info/inv');
+  	component.socket.onmessage = function(onmsg) {
   		const getTransactionUSD = async (value, time) => {
   			const response = await fetch(`https://api.coindesk.com/v1/bpi/currentprice.json`);
   			const data = await response.json();
@@ -44,22 +28,37 @@ class App extends Component {
   		}
 
   		const response = JSON.parse(onmsg.data);
+  		const payments = response.x.out.filter(output => {
+        return component.state.storedAddresses.indexOf(output.addr) !== -1;
+      });
 
-  		const payment = response.x.out.find(transaction => transaction.addr === address);
-
-  		if (payment) {
+  		if (payments.length) {
   			const id = response.x.hash;
   			const unixTime = response.x.time;
   			const unixDateObj = new Date(unixTime * 1000);
   			const time = unixDateObj.toLocaleString();
-  			const satoshiValue = payment.value / 100000000;
-  			getTransactionUSD(satoshiValue, unixTime).then(usdValue => {
-  				const transaction = { id, address: payment.addr, time, satoshiValue, usdValue}
-  				transactions.unshift(transaction);
-  			});
+
+        //TODO: Add conditional to handle multiple stored addresses appearing as outputs in the same transaction
+        const satoshiValue = payments[0].value / 100000000;
+        getTransactionUSD(satoshiValue, unixTime).then(usdValue => {
+          const transaction = { id, address: payments[0].addr, time, satoshiValue, usdValue}
+          component.state.transactions.unshift(transaction);
+          component.forceUpdate();
+        });
+
   		}
 
   	};
+  }
+
+  addAddress(e) {
+    e.preventDefault();
+    console.log("We adding one!")
+    if (!this.state.storedAddresses.includes(this.state.addressText)) {
+      this.state.storedAddresses.push(this.state.addressText)
+    }
+    const message = JSON.stringify({"op":"addr_sub", "addr": this.state.addressText})
+    this.socket.send(message);
   }
 
   updateText(e) {
